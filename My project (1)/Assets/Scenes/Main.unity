@@ -385,7 +385,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
   enemyPrefab: {fileID: 7324670082904925448, guid: f8c3a9c8acd66c746ab8e79dd0e6ddfb, type: 3}
-  bossPrefab: {fileID: 0}
+  bossPrefab: {fileID: 3822196019492289020, guid: c4f0d6c17b43efc4a9242c31f6b68c50, type: 3}
   spawnInterval: 2
   spawnRadius: 8
   maxEnemies: 30
@@ -670,5 +670,5 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 619394802}
   - {fileID: 1947615357}
-  - {fileID: 768469818}
   - {fileID: 1625372359}
+  - {fileID: 768469818}
