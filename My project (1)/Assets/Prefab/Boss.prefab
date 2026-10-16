@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4159635600138666072}
   - component: {fileID: 781571759879963006}
   - component: {fileID: 2027955846687406981}
-  - component: {fileID: 4593591581252751069}
+  - component: {fileID: 6948370664966061207}
   m_Layer: 0
   m_Name: Boss
   m_TagString: Untagged
@@ -167,7 +167,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
---- !u!114 &4593591581252751069
+--- !u!114 &6948370664966061207
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -176,6 +176,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 3822196019492289020}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4b73a5a99d96e794b93d7450b3ae37e3, type: 3}
+  m_Script: {fileID: 11500000, guid: 374a9c6b88f321042962d6390a2b5e36, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BossController1
+  m_EditorClassIdentifier: Assembly-CSharp::BossController
+  maxHP: 500
+  currentHP: 0
+  moveSpeed: 1.5
+  secondPhaseSpeedMultiplier: 1.5
+  attackRange: 2
+  contactDamage: 25
+  attackInterval: 1.5
+  scoreValue: 500
+  experiencePrefab: {fileID: 1279986457783719811, guid: d1b877270e5d92b4ab01c67c78339879, type: 3}
+  experienceValue: 10
