@@ -1,49 +1,47 @@
 
+
 using UnityEngine;
 
 public class AutoShooter : MonoBehaviour
 {
     public GameObject bulletPrefab;
+
+    [Header("攻撃設定")]
     public float fireInterval = 0.5f;
     public float attackRange = 10f;
     public int baseDamage = 10;
 
     private float nextFireTime;
-    private LevelSystem levelSystem;
-
-    void Start()
-    {
-        levelSystem = GetComponent<LevelSystem>();
-    }
 
     void Update()
     {
         if (GameManager.Instance != null &&
-            GameManager.Instance.IsGameOver) return;
+            GameManager.Instance.IsGameOver)
+            return;
 
-        if (bulletPrefab == null || Time.time < nextFireTime) return;
+        if (bulletPrefab == null || Time.time < nextFireTime)
+            return;
 
         Transform target = FindNearestTarget();
 
-        if (target == null) return;
+        if (target == null)
+            return;
 
         Vector2 direction =
-            ((Vector2)target.position - (Vector2)transform.position).normalized;
+            ((Vector2)target.position -
+             (Vector2)transform.position).normalized;
 
         GameObject bullet = Instantiate(
-            bulletPrefab, transform.position, Quaternion.identity);
+            bulletPrefab,
+            transform.position,
+            Quaternion.identity
+        );
 
         BulletController controller =
             bullet.GetComponent<BulletController>();
 
         if (controller != null)
-        {
-            int levelBonus = levelSystem != null
-                ? (levelSystem.Level - 1) * 2
-                : 0;
-
-            controller.Launch(direction, baseDamage + levelBonus);
-        }
+            controller.Launch(direction, baseDamage);
 
         nextFireTime = Time.time + fireInterval;
     }
@@ -53,7 +51,8 @@ public class AutoShooter : MonoBehaviour
         Transform nearest = null;
         float nearestDistance = attackRange;
 
-        EnemyController[] enemies = FindObjectsOfType<EnemyController>();
+        EnemyController[] enemies =
+            FindObjectsOfType<EnemyController>();
 
         foreach (EnemyController enemy in enemies)
         {
@@ -67,7 +66,8 @@ public class AutoShooter : MonoBehaviour
             }
         }
 
-        BossController[] bosses = FindObjectsOfType<BossController>();
+        BossController[] bosses =
+            FindObjectsOfType<BossController>();
 
         foreach (BossController boss in bosses)
         {
@@ -82,6 +82,18 @@ public class AutoShooter : MonoBehaviour
         }
 
         return nearest;
+    }
+
+    public void UpgradeDamage()
+    {
+        baseDamage += 10;
+        Debug.Log("攻撃力アップ！ 現在の攻撃力：" + baseDamage);
+    }
+
+    public void UpgradeAttackSpeed()
+    {
+        fireInterval = Mathf.Max(0.1f, fireInterval * 0.8f);
+        Debug.Log("攻撃速度アップ！ 発射間隔：" + fireInterval);
     }
 }
 
