@@ -1,10 +1,13 @@
 
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
+    private SpriteRenderer spriteRenderer;
+    private Coroutine flashCoroutine;
     public float moveSpeed = 5f;
     public int maxHP = 100;
     public int currentHP = 100;
@@ -21,6 +24,7 @@ public class PlayerController : MonoBehaviour
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
         currentHP = maxHP;
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     void Update()
@@ -71,6 +75,13 @@ public class PlayerController : MonoBehaviour
         currentHP -= damage;
         currentHP = Mathf.Max(0, currentHP);
 
+
+
+        if (flashCoroutine != null)
+            StopCoroutine(flashCoroutine);
+
+        flashCoroutine = StartCoroutine(DamageFlash());
+
         if (currentHP <= 0)
         {
             GameManager.Instance?.GameOver();
@@ -80,6 +91,23 @@ public class PlayerController : MonoBehaviour
     public void Heal(int amount)
     {
         currentHP = Mathf.Min(maxHP, currentHP + amount);
+    }
+
+    IEnumerator DamageFlash()
+    {
+        if (spriteRenderer == null) yield break;
+
+        for (int i = 0; i < 3; i++)
+        {
+            spriteRenderer.color = Color.white;
+            yield return new WaitForSeconds(0.06f);
+
+            spriteRenderer.color = Color.red;
+            yield return new WaitForSeconds(0.06f);
+        }
+
+        spriteRenderer.color = Color.blue;
+        flashCoroutine = null;
     }
 }
 

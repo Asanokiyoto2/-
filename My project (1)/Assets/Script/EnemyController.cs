@@ -1,9 +1,14 @@
 
 using UnityEngine;
+using System.Collections;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class EnemyController : MonoBehaviour
 {
+
+    private SpriteRenderer spriteRenderer;
+    private Color originalColor;
+    private Coroutine hitFlashCoroutine;
     public float moveSpeed = 2f;
     public int maxHP = 30;
     public int contactDamage = 10;
@@ -27,6 +32,12 @@ public class EnemyController : MonoBehaviour
 
     void Start()
     {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+
+        if (spriteRenderer != null)
+        {
+            originalColor = spriteRenderer.color;
+        }
         player = FindFirstObjectByType<PlayerController>();
     }
 
@@ -56,6 +67,8 @@ public class EnemyController : MonoBehaviour
     {
         currentHP -= damage;
 
+        PlayHitFlash();
+
         if (currentHP <= 0)
         {
             Die();
@@ -78,7 +91,43 @@ public class EnemyController : MonoBehaviour
         if (GameManager.Instance != null)
             GameManager.Instance.AddScore(scoreValue);
 
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+
+        if (sr != null)
+        {
+            DeathEffect.Play(
+                sr.sprite,
+                transform.position,
+                sr.color
+            );
+        }
+
         Destroy(gameObject);
+    }
+    public void PlayHitFlash()
+    {
+        if (spriteRenderer == null) return;
+
+        if (hitFlashCoroutine != null)
+        {
+            StopCoroutine(hitFlashCoroutine);
+        }
+
+        hitFlashCoroutine = StartCoroutine(HitFlash());
+    }
+
+    private IEnumerator HitFlash()
+    {
+        spriteRenderer.color = Color.white;
+
+        yield return new WaitForSeconds(0.08f);
+
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = originalColor;
+        }
+
+        hitFlashCoroutine = null;
     }
 }
 
