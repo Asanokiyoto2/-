@@ -12,11 +12,12 @@ public class PlayerController : MonoBehaviour
     public int maxHP = 100;
     public int currentHP = 100;
 
-    public Vector2 arenaMin = new Vector2(-8f, -4.3f);
-    public Vector2 arenaMax = new Vector2(8f, 4.3f);
+    [Header("移動範囲")]
+    public NeonBoundary neonBoundary;
 
     private Rigidbody2D rb;
     private Vector2 moveInput;
+    private EnergyShield energyShield;
 
     void Awake()
     {
@@ -25,6 +26,11 @@ public class PlayerController : MonoBehaviour
         rb.freezeRotation = true;
         currentHP = maxHP;
         spriteRenderer = GetComponent<SpriteRenderer>();
+        if (neonBoundary == null)
+        {
+            neonBoundary = FindFirstObjectByType<NeonBoundary>();
+        }
+        energyShield = GetComponent<EnergyShield>();
     }
 
     void Update()
@@ -52,6 +58,7 @@ public class PlayerController : MonoBehaviour
         moveInput = moveInput.normalized;
     }
 
+
     void FixedUpdate()
     {
         if (currentHP <= 0) return;
@@ -59,23 +66,46 @@ public class PlayerController : MonoBehaviour
         Vector2 nextPosition =
             rb.position + moveInput * moveSpeed * Time.fixedDeltaTime;
 
-        nextPosition.x = Mathf.Clamp(
-            nextPosition.x, arenaMin.x, arenaMax.x);
+        if (neonBoundary != null)
+        {
+            Vector2 min = neonBoundary.MinBounds;
+            Vector2 max = neonBoundary.MaxBounds;
 
-        nextPosition.y = Mathf.Clamp(
-            nextPosition.y, arenaMin.y, arenaMax.y);
+            // プレイヤーの中心が枠の内側に収まるようにする
+            Vector2 halfSize = Vector2.zero;
+
+            if (spriteRenderer != null)
+            {
+                halfSize = spriteRenderer.bounds.extents;
+            }
+
+            nextPosition.x = Mathf.Clamp(
+                nextPosition.x,
+                min.x + halfSize.x,
+                max.x - halfSize.x
+            );
+
+            nextPosition.y = Mathf.Clamp(
+                nextPosition.y,
+                min.y + halfSize.y,
+                max.y - halfSize.y
+            );
+        }
 
         rb.MovePosition(nextPosition);
     }
+
 
     public void TakeDamage(int damage)
     {
         if (currentHP <= 0) return;
 
+        // シールド発動中はダメージを受けない
+        if (energyShield != null && energyShield.IsActive)
+            return;
+
         currentHP -= damage;
         currentHP = Mathf.Max(0, currentHP);
-
-
 
         if (flashCoroutine != null)
             StopCoroutine(flashCoroutine);

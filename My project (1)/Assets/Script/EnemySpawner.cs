@@ -1,14 +1,22 @@
 
+
 using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
+    [Header("ìGPrefab")]
     public GameObject enemyPrefab;
+    public GameObject rangedEnemyPrefab;
     public GameObject bossPrefab;
 
+    [Header("èoåªê›íË")]
     public float spawnInterval = 2f;
     public float spawnRadius = 8f;
     public int maxEnemies = 30;
+    [Range(0f, 1f)]
+    public float rangedSpawnChance = 0.25f;
+
+    [Header("É{ÉXê›íË")]
     public float bossSpawnTime = 60f;
 
     private PlayerController player;
@@ -24,7 +32,8 @@ public class EnemySpawner : MonoBehaviour
 
     void Update()
     {
-        if (player == null || player.currentHP <= 0) return;
+        if (player == null || player.currentHP <= 0)
+            return;
 
         if (!bossSpawned &&
             bossPrefab != null &&
@@ -33,9 +42,10 @@ public class EnemySpawner : MonoBehaviour
             SpawnBoss();
         }
 
-        if (enemyPrefab == null || Time.time < nextSpawnTime) return;
+        if (enemyPrefab == null || Time.time < nextSpawnTime)
+            return;
 
-        if (FindObjectsOfType<EnemyController>().Length < maxEnemies)
+        if (FindObjectsByType<EnemyController>(FindObjectsSortMode.None).Length < maxEnemies)
         {
             SpawnEnemy();
         }
@@ -56,13 +66,31 @@ public class EnemySpawner : MonoBehaviour
 
     void SpawnEnemy()
     {
-        Instantiate(enemyPrefab, GetSpawnPosition(), Quaternion.identity);
+        GameObject prefabToSpawn = enemyPrefab;
+
+        if (rangedEnemyPrefab != null &&
+            Random.value < rangedSpawnChance)
+        {
+            prefabToSpawn = rangedEnemyPrefab;
+        }
+
+        Instantiate(
+            prefabToSpawn,
+            GetSpawnPosition(),
+            Quaternion.identity
+        );
     }
 
     void SpawnBoss()
     {
-        Instantiate(bossPrefab, GetSpawnPosition(), Quaternion.identity);
+        Instantiate(
+            bossPrefab,
+            GetSpawnPosition(),
+            Quaternion.identity
+        );
+
         bossSpawned = true;
     }
 }
+
 

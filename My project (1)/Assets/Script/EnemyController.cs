@@ -5,10 +5,16 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody2D))]
 public class EnemyController : MonoBehaviour
 {
+    public enum EnemyType
+    {
+        Melee,
+        Ranged
+    }
 
-    private SpriteRenderer spriteRenderer;
-    private Color originalColor;
-    private Coroutine hitFlashCoroutine;
+    [Header("敵の種類")]
+    public EnemyType enemyType = EnemyType.Melee;
+
+    [Header("基本設定")]
     public float moveSpeed = 2f;
     public int maxHP = 30;
     public int contactDamage = 10;
@@ -17,10 +23,23 @@ public class EnemyController : MonoBehaviour
     public float damageInterval = 1f;
     public GameObject experiencePrefab;
 
+    [Header("遠距離攻撃設定")]
+    public GameObject enemyProjectilePrefab;
+    public float preferredDistance = 5f;
+    public float distanceTolerance = 0.8f;
+    public float fireInterval = 2f;
+    public float projectileSpeed = 5f;
+    public int projectileDamage = 10;
+
+    private SpriteRenderer spriteRenderer;
+    private Color originalColor;
+    private Coroutine hitFlashCoroutine;
+
     private int currentHP;
     private Rigidbody2D rb;
     private PlayerController player;
     private float nextDamageTime;
+    private float nextFireTime;
 
     void Awake()
     {
@@ -38,23 +57,98 @@ public class EnemyController : MonoBehaviour
         {
             originalColor = spriteRenderer.color;
         }
+
         player = FindFirstObjectByType<PlayerController>();
+        nextFireTime = Time.time + Random.Range(0f, fireInterval);
+    }
+
+    void Update()
+    {
+        if (player == null || player.currentHP <= 0)
+            return;
+
+        if (enemyType == EnemyType.Ranged)
+        {
+            TryShoot();
+        }
     }
 
     void FixedUpdate()
     {
-        if (player == null || player.currentHP <= 0) return;
+        if (player == null || player.currentHP <= 0)
+            return;
+
+        Vector2 toPlayer =
+            (Vector2)player.transform.position - rb.position;
+
+        float distance = toPlayer.magnitude;
+
+        if (distance <= 0.01f)
+            return;
+
+        Vector2 direction = toPlayer.normalized;
+
+        if (enemyType == EnemyType.Melee)
+        {
+            // 通常敵：プレイヤーに近づく
+            rb.MovePosition(
+                rb.position + direction * moveSpeed * Time.fixedDeltaTime
+            );
+        }
+        else
+        {
+            // 遠距離敵：プレイヤーとの距離を保つ
+            if (distance > preferredDistance + distanceTolerance)
+            {
+                rb.MovePosition(
+                    rb.position + direction * moveSpeed * Time.fixedDeltaTime
+                );
+            }
+            else if (distance < preferredDistance - distanceTolerance)
+            {
+                rb.MovePosition(
+                    rb.position - direction * moveSpeed * Time.fixedDeltaTime
+                );
+            }
+        }
+    }
+
+    void TryShoot()
+    {
+        if (enemyProjectilePrefab == null)
+            return;
+
+        if (Time.time < nextFireTime)
+            return;
 
         Vector2 direction =
             ((Vector2)player.transform.position - rb.position).normalized;
 
-        rb.MovePosition(
-            rb.position + direction * moveSpeed * Time.fixedDeltaTime);
+        GameObject projectile = Instantiate(
+            enemyProjectilePrefab,
+            transform.position,
+            Quaternion.identity
+        );
+
+        EnemyProjectile projectileScript =
+            projectile.GetComponent<EnemyProjectile>();
+
+        if (projectileScript != null)
+        {
+            projectileScript.Launch(
+                direction,
+                projectileSpeed,
+                projectileDamage
+            );
+        }
+
+        nextFireTime = Time.time + Mathf.Max(0.1f, fireInterval);
     }
 
     void OnTriggerStay2D(Collider2D other)
     {
-        PlayerController target = other.GetComponent<PlayerController>();
+        PlayerController target =
+            other.GetComponentInParent<PlayerController>();
 
         if (target != null && Time.time >= nextDamageTime)
         {
@@ -65,8 +159,10 @@ public class EnemyController : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        currentHP -= damage;
+        if (currentHP <= 0)
+            return;
 
+        currentHP -= damage;
         PlayHitFlash();
 
         if (currentHP <= 0)
@@ -80,7 +176,10 @@ public class EnemyController : MonoBehaviour
         if (experiencePrefab != null)
         {
             GameObject orb = Instantiate(
-                experiencePrefab, transform.position, Quaternion.identity);
+                experiencePrefab,
+                transform.position,
+                Quaternion.identity
+            );
 
             ExperienceOrb xp = orb.GetComponent<ExperienceOrb>();
 
@@ -91,43 +190,40 @@ public class EnemyController : MonoBehaviour
         if (GameManager.Instance != null)
             GameManager.Instance.AddScore(scoreValue);
 
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
-
-        if (sr != null)
+        if (spriteRenderer != null)
         {
             DeathEffect.Play(
-                sr.sprite,
+                spriteRenderer.sprite,
                 transform.position,
-                sr.color
+                spriteRenderer.color
             );
         }
 
         Destroy(gameObject);
     }
+
     public void PlayHitFlash()
     {
-        if (spriteRenderer == null) return;
+        if (spriteRenderer == null)
+            return;
 
         if (hitFlashCoroutine != null)
-        {
             StopCoroutine(hitFlashCoroutine);
-        }
 
         hitFlashCoroutine = StartCoroutine(HitFlash());
     }
 
-    private IEnumerator HitFlash()
+    IEnumerator HitFlash()
     {
         spriteRenderer.color = Color.white;
 
         yield return new WaitForSeconds(0.08f);
 
         if (spriteRenderer != null)
-        {
             spriteRenderer.color = originalColor;
-        }
 
         hitFlashCoroutine = null;
     }
 }
+
 
