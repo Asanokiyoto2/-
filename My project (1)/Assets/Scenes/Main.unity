@@ -507,6 +507,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1625372359}
   - component: {fileID: 1625372358}
+  - component: {fileID: 1625372360}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -541,6 +542,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1625372360
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1625372357}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89caf982080db194386e38dbd6d73370, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShockwaveUI
+  shockwaveSkill: {fileID: 1947615359}
+  position: {x: 20, y: 100}
+  boxSize: 150
 --- !u!1 &1947615351
 GameObject:
   m_ObjectHideFlags: 0
@@ -556,6 +572,7 @@ GameObject:
   - component: {fileID: 1947615353}
   - component: {fileID: 1947615352}
   - component: {fileID: 1947615358}
+  - component: {fileID: 1947615359}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -633,7 +650,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AutoShooter
   bulletPrefab: {fileID: 6356674483303145634, guid: 571b613ad63e74a4c8390745f8296394, type: 3}
   fireInterval: 0.5
-  attackRange: 10
   baseDamage: 10
 --- !u!212 &1947615356
 SpriteRenderer:
@@ -755,6 +771,22 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!114 &1947615359
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1947615351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c480f317f1663f498ffa5b97a5620b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShockwaveSkill
+  radius: 4
+  damage: 40
+  cooldown: 5
+  effectDuration: 0.35
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

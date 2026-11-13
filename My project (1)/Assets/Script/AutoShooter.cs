@@ -1,99 +1,130 @@
 
-
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class AutoShooter : MonoBehaviour
 {
+    [Header("弾の設定")]
     public GameObject bulletPrefab;
-
-    [Header("攻撃設定")]
     public float fireInterval = 0.5f;
-    public float attackRange = 10f;
     public int baseDamage = 10;
 
     private float nextFireTime;
+    private Camera mainCamera;
+
+    void Awake()
+    {
+        mainCamera = Camera.main;
+    }
 
     void Update()
     {
+        // ゲームオーバー中は撃てない
         if (GameManager.Instance != null &&
             GameManager.Instance.IsGameOver)
+        {
+            return;
+        }
+
+        if (Mouse.current == null)
             return;
 
-        if (bulletPrefab == null || Time.time < nextFireTime)
+        // 左クリックしたときだけ発射
+        if (Mouse.current.leftButton.wasPressedThisFrame &&
+            Time.time >= nextFireTime)
+        {
+            Shoot();
+        }
+    }
+
+    void Shoot()
+    {
+        if (bulletPrefab == null)
             return;
 
-        Transform target = FindNearestTarget();
+        if (mainCamera == null)
+            mainCamera = Camera.main;
 
-        if (target == null)
+        if (mainCamera == null)
             return;
 
+        // マウスのスクリーン座標を取得
+        Vector2 mousePosition =
+            Mouse.current.position.ReadValue();
+
+        // スクリーン座標をワールド座標に変換
+        float cameraDistance = Mathf.Abs(
+            transform.position.z -
+            mainCamera.transform.position.z
+        );
+
+        Vector3 screenPosition = new Vector3(
+            mousePosition.x,
+            mousePosition.y,
+            cameraDistance
+        );
+
+        Vector3 mouseWorldPosition =
+            mainCamera.ScreenToWorldPoint(screenPosition);
+
+        // プレイヤーからマウス方向へのベクトル
         Vector2 direction =
-            ((Vector2)target.position -
-             (Vector2)transform.position).normalized;
+            (Vector2)(mouseWorldPosition - transform.position);
 
+        if (direction.sqrMagnitude < 0.001f)
+            return;
+
+        direction.Normalize();
+
+        // 弾を生成
         GameObject bullet = Instantiate(
             bulletPrefab,
             transform.position,
             Quaternion.identity
         );
 
+        // 発射方向とダメージを設定
         BulletController controller =
             bullet.GetComponent<BulletController>();
 
         if (controller != null)
+        {
             controller.Launch(direction, baseDamage);
+        }
+        else
+        {
+            Debug.LogError(
+                "弾Prefabに BulletController がありません！"
+            );
+
+            Destroy(bullet);
+            return;
+        }
 
         nextFireTime = Time.time + fireInterval;
     }
 
-    Transform FindNearestTarget()
-    {
-        Transform nearest = null;
-        float nearestDistance = attackRange;
-
-        EnemyController[] enemies =
-            FindObjectsOfType<EnemyController>();
-
-        foreach (EnemyController enemy in enemies)
-        {
-            float distance = Vector2.Distance(
-                transform.position, enemy.transform.position);
-
-            if (distance < nearestDistance)
-            {
-                nearestDistance = distance;
-                nearest = enemy.transform;
-            }
-        }
-
-        BossController[] bosses =
-            FindObjectsOfType<BossController>();
-
-        foreach (BossController boss in bosses)
-        {
-            float distance = Vector2.Distance(
-                transform.position, boss.transform.position);
-
-            if (distance < nearestDistance)
-            {
-                nearestDistance = distance;
-                nearest = boss.transform;
-            }
-        }
-
-        return nearest;
-    }
-
+    // レベルアップ機能との互換性を維持
     public void UpgradeDamage()
     {
         baseDamage += 10;
-        Debug.Log("攻撃力アップ！ 現在の攻撃力：" + baseDamage);
+
+        Debug.Log(
+            "攻撃力アップ！ 現在の攻撃力：" + baseDamage
+        );
     }
 
     public void UpgradeAttackSpeed()
     {
-        fireInterval = Mathf.Max(0.1f, fireInterval * 0.8f);
-        Debug.Log("攻撃速度アップ！ 発射間隔：" + fireInterval);
+        fireInterval = Mathf.Max(
+            0.1f,
+            fireInterval * 0.8f
+        );
+
+        Debug.Log(
+            "攻撃速度アップ！ 発射間隔：" + fireInterval
+        );
     }
 }
+
 

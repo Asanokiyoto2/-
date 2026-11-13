@@ -4,12 +4,13 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class BulletController : MonoBehaviour
 {
-    public float speed = 10f;
-    public int damage = 10;
+    public float speed = 8f;
     public float lifeTime = 3f;
 
     private Rigidbody2D rb;
-    private Vector2 direction = Vector2.right;
+    private Vector2 direction;
+    private int damage = 10;
+    private bool launched;
 
     void Awake()
     {
@@ -18,31 +19,29 @@ public class BulletController : MonoBehaviour
         rb.bodyType = RigidbodyType2D.Kinematic;
     }
 
-    void Start()
-    {
-        Destroy(gameObject, lifeTime);
-    }
-
     public void Launch(Vector2 shotDirection, int shotDamage)
     {
         direction = shotDirection.normalized;
         damage = shotDamage;
+        launched = true;
 
-        float angle = Mathf.Atan2(direction.y, direction.x) *
-                      Mathf.Rad2Deg;
-
-        transform.rotation = Quaternion.Euler(0f, 0f, angle);
+        Destroy(gameObject, lifeTime);
     }
 
     void FixedUpdate()
     {
+        if (!launched)
+            return;
+
         rb.MovePosition(
-            rb.position + direction * speed * Time.fixedDeltaTime);
+            rb.position + direction * speed * Time.fixedDeltaTime
+        );
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        EnemyController enemy = other.GetComponent<EnemyController>();
+        EnemyController enemy =
+            other.GetComponentInParent<EnemyController>();
 
         if (enemy != null)
         {
@@ -51,7 +50,8 @@ public class BulletController : MonoBehaviour
             return;
         }
 
-        BossController boss = other.GetComponent<BossController>();
+        BossController boss =
+            other.GetComponentInParent<BossController>();
 
         if (boss != null)
         {
@@ -60,4 +60,5 @@ public class BulletController : MonoBehaviour
         }
     }
 }
+
 
