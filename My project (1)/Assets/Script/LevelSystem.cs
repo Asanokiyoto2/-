@@ -9,7 +9,11 @@ public class LevelSystem : MonoBehaviour
 
     private PlayerController player;
     private AutoShooter autoShooter;
+
     private bool isLevelingUp;
+    private int pendingLevelUps;
+
+    public bool HasPendingLevelUps => pendingLevelUps > 0;
 
     void Awake()
     {
@@ -23,24 +27,31 @@ public class LevelSystem : MonoBehaviour
 
         Experience += amount;
 
-        if (Experience >= ExperienceToNextLevel)
+        // 一度に大量の経験値を獲得しても対応
+        while (Experience >= ExperienceToNextLevel)
         {
             Experience -= ExperienceToNextLevel;
+
             Level++;
+            pendingLevelUps++;
+
             ExperienceToNextLevel += 3;
+        }
 
-            if (!isLevelingUp)
+        if (pendingLevelUps > 0 && !isLevelingUp)
+        {
+            isLevelingUp = true;
+
+            if (LevelUpUI.Instance != null)
             {
-                isLevelingUp = true;
-
-                if (LevelUpUI.Instance != null)
+                LevelUpUI.Instance.ShowChoices(this);
+            }
+            else
+            {
+                // UIがなければランダムな強化を適用
+                while (pendingLevelUps > 0)
                 {
-                    LevelUpUI.Instance.ShowChoices(this);
-                }
-                else
-                {
-                    // 選択画面が未設定でもゲームが止まらないようにする
-                    ApplyUpgrade(Random.Range(0, 3));
+                    ApplyUpgrade(Random.Range(0, 5));
                 }
             }
         }
@@ -51,23 +62,57 @@ public class LevelSystem : MonoBehaviour
         switch (choice)
         {
             case 0:
+                // 攻撃力アップ
                 if (autoShooter != null)
                     autoShooter.UpgradeDamage();
                 break;
 
             case 1:
+                // 連射速度アップ
                 if (autoShooter != null)
                     autoShooter.UpgradeAttackSpeed();
                 break;
 
             case 2:
+                // HP回復
                 if (player != null)
                     player.Heal(30);
                 break;
+
+            case 3:
+                // 移動速度アップ
+                if (player != null)
+                {
+                    player.moveSpeed += 0.5f;
+                    Debug.Log(
+                        "移動速度アップ！ 現在：" + player.moveSpeed
+                    );
+                }
+                break;
+
+            case 4:
+                // 最大HPアップ＋HPを20回復
+                if (player != null)
+                {
+                    player.maxHP += 20;
+                    player.currentHP = Mathf.Min(
+                        player.currentHP + 20,
+                        player.maxHP
+                    );
+
+                    Debug.Log(
+                        "最大HPアップ！ 最大HP：" + player.maxHP
+                    );
+                }
+                break;
         }
 
-        isLevelingUp = false;
+        pendingLevelUps = Mathf.Max(0, pendingLevelUps - 1);
+
+        if (pendingLevelUps <= 0)
+            isLevelingUp = false;
     }
 }
+
 
 

@@ -186,6 +186,25 @@ MonoBehaviour:
   attackRange: 2
   contactDamage: 25
   attackInterval: 1.5
+  dashWarningTime: 0.8
+  dashSpeed: 10
+  dashDuration: 0.45
+  dashInterval: 5
+  dashDamage: 35
+  projectilePrefab: {fileID: 3257146951806493526, guid: 01a2e4ca18e29364d82e95a60d0b5c6a, type: 3}
+  shootInterval: 4
+  projectileSpeed: 4
+  projectileDamage: 15
+  projectileCount: 5
+  spreadAngle: 60
+  shockwaveInterval: 7
+  shockwaveWarningTime: 1
+  shockwaveRadius: 3.5
+  shockwaveDamage: 30
+  shockwaveVisualDuration: 0.4
   scoreValue: 500
   experiencePrefab: {fileID: 1279986457783719811, guid: d1b877270e5d92b4ab01c67c78339879, type: 3}
   experienceValue: 10
+  normalColor: {r: 1, g: 0.15, b: 0.15, a: 1}
+  warningColor: {r: 1, g: 0.85, b: 0.1, a: 1}
+  phaseTwoColor: {r: 1, g: 0, b: 0.8, a: 1}
