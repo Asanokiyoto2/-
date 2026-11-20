@@ -331,43 +331,73 @@ public class BossController : MonoBehaviour
         }
     }
 
+
     IEnumerator ShockwaveAttack()
     {
         if (isDead)
             yield break;
 
+        Debug.Log("衝撃波：予告開始");
+
         SetBossColor(warningColor);
 
-        // 攻撃する位置を決める
+        // 予告円を表示
         Vector3 center = transform.position;
 
-        // 赤い円で危険範囲を予告
         if (shockwaveLine != null)
         {
-            shockwaveLine.transform.position = center;
+            shockwaveLine.transform.localPosition = Vector3.zero;
             shockwaveLine.startColor = shockwaveWarningColor;
             shockwaveLine.endColor = shockwaveWarningColor;
-            shockwaveLine.startWidth = 0.12f;
-            shockwaveLine.endWidth = 0.12f;
+            shockwaveLine.enabled = true;
 
             DrawShockwaveCircle(shockwaveRadius);
-            shockwaveLine.enabled = true;
         }
 
-        // 予告中はプレイヤーが回避できる
+        // 回避する時間
         yield return new WaitForSeconds(shockwaveWarningTime);
 
         if (isDead)
             yield break;
 
+        Debug.Log("衝撃波：ダメージ判定開始");
+
+        if (player != null && player.currentHP > 0)
+        {
+            float distance = Vector2.Distance(
+                center,
+                player.transform.position
+            );
+
+            float hitRadius = shockwaveRadius + 1.5f;
+
+            Debug.Log(
+                $"衝撃波判定：距離={distance:F2}、範囲={hitRadius:F2}"
+            );
+
+            if (distance <= hitRadius)
+            {
+                int damage = secondPhaseStarted
+                    ? Mathf.RoundToInt(shockwaveDamage * 1.3f)
+                    : shockwaveDamage;
+
+                player.TakeDamage(damage);
+                Debug.Log($"衝撃波命中！ {damage} ダメージ");
+            }
+            else
+            {
+                Debug.Log("衝撃波回避！");
+            }
+        }
+
+        // 攻撃後の円形エフェクト
         SetBossColor(secondPhaseStarted
             ? phaseTwoColor
             : normalColor);
 
-        // 衝撃波が外側へ広がる
         float elapsed = 0f;
 
-        while (elapsed < shockwaveVisualDuration)
+        while (elapsed < shockwaveVisualDuration && !isDead)
         {
             if (shockwaveLine != null)
             {
@@ -384,42 +414,10 @@ public class BossController : MonoBehaviour
             yield return null;
         }
 
-        // 衝撃波の範囲内にいるプレイヤーへダメージ
-        if (!isDead && player != null && player.currentHP > 0)
-        {
-            float distance = Vector2.Distance(
-                center,
-                player.transform.position
-            );
-
-            // プレイヤーの大きさも考慮して判定
-            float hitRadius = shockwaveRadius + 0.5f;
-
-            Debug.Log(
-                $"衝撃波判定：距離={distance:F2} / 範囲={hitRadius:F2}"
-            );
-
-            if (distance <= hitRadius)
-            {
-                int damage = secondPhaseStarted
-                    ? Mathf.RoundToInt(shockwaveDamage * 1.3f)
-                    : shockwaveDamage;
-
-                player.TakeDamage(damage);
-
-                Debug.Log($"衝撃波命中！ {damage} ダメージ");
-            }
-            else
-            {
-                Debug.Log("衝撃波回避！");
-            }
-        }
-
         if (shockwaveLine != null)
-        {
             shockwaveLine.enabled = false;
-        }
     }
+
 
     void CreateShockwaveVisual()
     {

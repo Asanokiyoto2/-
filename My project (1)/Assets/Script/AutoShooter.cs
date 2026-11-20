@@ -121,9 +121,7 @@ public class AutoShooter : MonoBehaviour
             fireInterval * 0.8f
         );
 
-        Debug.Log(
-            "攻撃速度アップ！ 発射間隔：" + fireInterval
-        );
+        //Debug.Log("攻撃速度アップ！ 発射間隔：" + fireInterval);
     }
 }
 

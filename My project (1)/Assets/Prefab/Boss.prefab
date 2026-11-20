@@ -208,3 +208,4 @@ MonoBehaviour:
   normalColor: {r: 1, g: 0.15, b: 0.15, a: 1}
   warningColor: {r: 1, g: 0.85, b: 0.1, a: 1}
   phaseTwoColor: {r: 1, g: 0, b: 0.8, a: 1}
+  shockwaveWarningColor: {r: 1, g: 0.05, b: 0.05, a: 0.8}

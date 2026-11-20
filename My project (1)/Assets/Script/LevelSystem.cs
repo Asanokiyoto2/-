@@ -100,9 +100,7 @@ public class LevelSystem : MonoBehaviour
                         player.maxHP
                     );
 
-                    Debug.Log(
-                        "最大HPアップ！ 最大HP：" + player.maxHP
-                    );
+                    //Debug.Log("最大HPアップ！ 最大HP：" + player.maxHP);
                 }
                 break;
         }
